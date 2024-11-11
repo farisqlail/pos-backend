@@ -6,11 +6,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UserController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
 
 Route::post('login', [AuthController::class, 'login']);
 
@@ -28,6 +28,12 @@ Route::delete('promos/{id}', [PromoController::class, 'destroy']);
 
 Route::get('transactions', [TransactionController::class, 'index']);
 Route::get('transactions/{id}', [TransactionController::class, 'show']); 
-Route::post('transactions', [TransactionController::class, 'store']); 
+Route::post('transactions/create', [TransactionController::class, 'store']); 
 Route::put('transactions/{id}', [TransactionController::class, 'update']); 
 Route::delete('transactions/{id}', [TransactionController::class, 'destroy']);
+
+Route::get('/users', [UserController::class, 'index']);
+Route::post('/users', [UserController::class, 'store']);
+Route::get('/users/{id}', [UserController::class, 'show']);
+Route::put('/users/{id}', [UserController::class, 'update']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']);

@@ -38,11 +38,14 @@ class TransactionController extends Controller
             'menus.*.id_menu' => 'required|exists:menus,id',
             'menus.*.quantity' => 'required|integer|min:1',
             'menus.*.id_promo' => 'nullable|exists:promos,id',
+            'menus.*.user_id' => 'required|exists:users,id'
         ]);
 
         $grandTotal = 0;
         $discountAmount = 0;
         $menusData = [];
+
+        $userId = $request->menus[0]['user_id'];
 
         foreach ($request->menus as $menuData) {
             $menu = Menu::findOrFail($menuData['id_menu']);
@@ -68,21 +71,25 @@ class TransactionController extends Controller
             $menu->decrement('stock', $quantity);
         }
 
-        foreach ($menusData as $menuData) {
-            $transaction = DB::table('transactions')->insertGetId([
-                'id_menu' => $menuData['id_menu'],
-                'id_promo' => $menuData['id_promo'],
-                'status_transaction' => 'completed',
-                'status_payment' => 'paid',
-                'discount_amount' => $discountAmount,
-                'grand_total' => $grandTotal,
-                'quantity' => collect($menusData)->sum('quantity'),
-            ]);
-        }
+        $noNota = 'TRX' . date('Ymd') . strtoupper(uniqid());
+
+        $transactionId = DB::table('transactions')->insertGetId([
+            'user_id' => $userId,
+            'id_menu' => $menusData[0]['id_menu'],
+            'id_promo' => $menusData[0]['id_promo'],
+            'no_nota' => $noNota,
+            'status_transaction' => 'completed',
+            'status_payment' => 'paid',
+            'discount_amount' => $discountAmount,
+            'grand_total' => $grandTotal,
+            'quantity' => collect($menusData)->sum('quantity'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         foreach ($menusData as $menuData) {
             DB::table('menu_transaction')->insert([
-                'transaction_id' => $transaction,
+                'transaction_id' => $transactionId,
                 'quantity' => $menuData['quantity'],
                 'price' => $menuData['grand_total'],
                 'created_at' => now(),
@@ -93,7 +100,9 @@ class TransactionController extends Controller
         return response()->json([
             'message' => 'Transaction created successfully',
             'transaction' => [
-                'id' => $transaction,
+                'id' => $transactionId,
+                'no_nota' => $noNota,
+                'user_id' => $userId,
                 'status_transaction' => 'completed',
                 'status_payment' => 'paid',
                 'grand_total' => $grandTotal,
@@ -103,8 +112,6 @@ class TransactionController extends Controller
         ], 201);
     }
 
-
-    // Mengupdate transaksi berdasarkan ID
     public function update(Request $request, $id)
     {
         $transaction = Transaction::find($id);

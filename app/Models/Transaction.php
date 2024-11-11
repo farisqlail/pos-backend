@@ -12,6 +12,7 @@ class Transaction extends Model
     protected $fillable = [
         'id_menu',
         'id_promo',
+        'no_nota',
         'status_transaction',
         'status_payment',
         'discount_amount',
@@ -22,6 +23,11 @@ class Transaction extends Model
     public function menus()
     {
         return $this->belongsToMany(Menu::class)
-            ->withPivot('quantity', 'price'); // Tambahkan 'quantity' dan 'price' sebagai data pivot
+            ->withPivot('quantity', 'price');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

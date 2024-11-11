@@ -22,6 +22,8 @@ class TransactionSeeder extends Seeder
         Transaction::create([
             'id_menu' => $menu->id,
             'id_promo' => $promo ? $promo->id : null,
+            'no_nota' => 'n0001',
+            'user_id' => 2,
             'quantity' => 2,
             'grand_total' => ($menu->price * 2) - (($promo->discount / 100) * $menu->price * 2),
             'status_transaction' => 'completed',

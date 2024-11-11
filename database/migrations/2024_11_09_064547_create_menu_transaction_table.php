@@ -15,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('menu_transaction', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaction_id')->constrained()->onDelete('cascade'); // Transaction relasi
-            $table->integer('quantity'); // Kuantitas menu
-            $table->decimal('price', 10, 2); // Harga menu
+            $table->foreignId('transaction_id')->constrained()->onDelete('cascade'); 
+            $table->integer('quantity'); 
+            $table->decimal('price', 10, 2); 
             $table->timestamps();
         });
     }
