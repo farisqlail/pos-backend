@@ -1,6 +1,7 @@
 <?php
 
 use Database\Seeders\MenuSeeder;
+use Database\Seeders\PaymentSeeder;
 use Database\Seeders\PromoSeeder;
 use Database\Seeders\TransactionSeeder;
 use Database\Seeders\UsersSeeder;
@@ -19,6 +20,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MenuSeeder::class);
         $this->call(PromoSeeder::class);
         $this->call(TransactionSeeder::class);
-        
+        $this->call(PaymentSeeder::class);
     }
 }

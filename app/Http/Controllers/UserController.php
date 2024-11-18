@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Resources\UsersResource;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -12,7 +13,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return response()->json($users);
+        return UsersResource::collection($users);
     }
 
     // Store a newly created user
@@ -22,7 +23,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|string|in:cashier,admin',
+            'role' => 'required|string',
         ]);
 
         $user = User::create([
@@ -63,7 +64,7 @@ class UserController extends Controller
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $id,
             'password' => 'sometimes|string|min:8',
-            'role' => 'sometimes|string|in:cashier,admin',
+            'role' => 'required|string',
         ]);
 
         $user->update([
@@ -79,7 +80,6 @@ class UserController extends Controller
         ]);
     }
 
-    // Remove the specified user
     public function destroy($id)
     {
         $user = User::find($id);

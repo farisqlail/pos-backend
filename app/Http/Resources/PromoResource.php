@@ -18,7 +18,6 @@ class PromoResource extends JsonResource
             'id' => $this->id, 
             'name' => $this->name,
             'discount' => $this->discount,
-            'quantity' => $this->quantity,
         ];
     }
 }

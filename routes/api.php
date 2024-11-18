@@ -7,6 +7,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PaymentController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -37,3 +38,9 @@ Route::post('/users', [UserController::class, 'store']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 Route::put('/users/{id}', [UserController::class, 'update']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+Route::get('/payments', [PaymentController::class, 'index']);
+Route::post('/payments', [PaymentController::class, 'store']);
+Route::get('/payments/{id}', [PaymentController::class, 'show']);
+Route::put('/payments/{id}', [PaymentController::class, 'update']);
+Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);

@@ -34,14 +34,12 @@ class PromoController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'discount' => 'required|integer',
-            'quantity' => 'required|integer',
         ]);
 
         // Membuat promo baru
         $promo = Promo::create([
             'name' => $request->name,
             'discount' => $request->discount,
-            'quantity' => $request->quantity,
         ]);
 
         return response()->json([
@@ -63,14 +61,12 @@ class PromoController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'discount' => 'required|integer',
-            'quantity' => 'required|integer',
         ]);
 
         // Update data promo
         $promo->update([
             'name' => $request->name,
             'discount' => $request->discount,
-            'quantity' => $request->quantity,
         ]);
 
         return response()->json([
