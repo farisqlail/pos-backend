@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('menu_transaction', function (Blueprint $table) {
             $table->id();
             $table->foreignId('transaction_id')->constrained()->onDelete('cascade'); 
+            $table->foreignId('menu_id')->constrained()->onDelete('cascade'); 
             $table->integer('quantity'); 
             $table->decimal('price', 10, 2); 
             $table->timestamps();

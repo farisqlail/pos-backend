@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('no_nota')->unique();
             $table->integer('quantity');
             $table->decimal('grand_total', 10, 2);
+            $table->string("payment");
             $table->enum('status_transaction', ['pending', 'completed', 'canceled'])->default('pending');
             $table->enum('status_payment', ['unpaid', 'paid'])->default('unpaid');
             $table->decimal('discount_amount', 10, 2)->nullable();

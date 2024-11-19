@@ -8,58 +8,76 @@ use App\Http\Resources\PaymentsResource;
 
 class PaymentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Display a listing of the payments
     public function index()
     {
         $payments = Payment::all();
         return PaymentsResource::collection($payments);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Store a newly created payment
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
 
-        $payment = Payment::create($request->only('name'));
+        $payment = Payment::create([
+            'name' => $request->name,
+        ]);
 
-        return response()->json($payment, 201);
+        return response()->json([
+            'message' => 'Payment created successfully',
+            'payment' => $payment,
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Payment $payment)
+    // Display the specified payment
+    public function show($id)
     {
-        return response()->json($payment, 200);
+        $payment = Payment::find($id);
+
+        if (!$payment) {
+            return response()->json(['message' => 'Payment not found'], 404);
+        }
+
+        return response()->json($payment);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Payment $payment)
+    // Update the specified payment
+    public function update(Request $request, $id)
     {
+        $payment = Payment::find($id);
+
+        if (!$payment) {
+            return response()->json(['message' => 'Payment not found'], 404);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
 
-        $payment->update($request->only('name'));
+        $payment->update([
+            'name' => $request->name,
+        ]);
 
-        return response()->json($payment, 200);
+        return response()->json([
+            'message' => 'Payment updated successfully',
+            'payment' => $payment,
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Payment $payment)
+    // Remove the specified payment
+    public function destroy($id)
     {
+        $payment = Payment::find($id);
+
+        if (!$payment) {
+            return response()->json(['message' => 'Payment not found'], 404);
+        }
+
         $payment->delete();
 
-        return response()->json(['message' => 'Payment deleted successfully'], 200);
+        return response()->json(['message' => 'Payment deleted successfully']);
     }
 }

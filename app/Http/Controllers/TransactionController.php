@@ -10,17 +10,15 @@ use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
-    // Menampilkan semua transaksi
     public function index()
     {
-        $transactions = Transaction::all(); // Ambil semua data transaksi
+        $transactions = Transaction::all();
         return response()->json($transactions);
     }
 
-    // Menampilkan transaksi berdasarkan ID
     public function show($id)
     {
-        $transaction = Transaction::find($id);
+        $transaction = Transaction::with(['menus'])->where('no_nota', $id)->first();
 
         if (!$transaction) {
             return response()->json(['message' => 'Transaction not found'], 404);
@@ -31,9 +29,11 @@ class TransactionController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
             'transaction_id' => 'nullable|exists:transactions,id',
+            'total' => 'required',
+            'status_payment' => 'required',
+            'status_transactions' => 'required',
             'menus' => 'required|array',
             'menus.*.id_menu' => 'required|exists:menus,id',
             'menus.*.quantity' => 'required|integer|min:1',
@@ -42,7 +42,6 @@ class TransactionController extends Controller
         ]);
 
         $grandTotal = 0;
-        $discountAmount = 0;
         $menusData = [];
 
         $userId = $request->menus[0]['user_id'];
@@ -51,21 +50,12 @@ class TransactionController extends Controller
             $menu = Menu::findOrFail($menuData['id_menu']);
             $quantity = $menuData['quantity'];
 
-            $discountAmountForItem = 0;
-            if (isset($menuData['id_promo'])) {
-                $promo = Promo::find($menuData['id_promo']);
-                if ($promo) {
-                    $discountAmountForItem = ($promo->discount / 100) * $menu->price * $quantity;
-                }
-            }
-
-            $grandTotal += ($menu->price * $quantity) - $discountAmountForItem;
+            $grandTotal += ($menu->price * $quantity) - $request->discount_amount;
             $menusData[] = [
                 'id_menu' => $menu->id,
-                'id_promo' => $menuData['id_promo'] ?? null,
+                'id_promo' => $request->id_promo,
                 'quantity' => $quantity,
-                'discount_amount' => $discountAmountForItem,
-                'grand_total' => ($menu->price * $quantity) - $discountAmountForItem,
+                'grand_total' => $menu->price * $quantity,
             ];
 
             $menu->decrement('stock', $quantity);
@@ -76,12 +66,13 @@ class TransactionController extends Controller
         $transactionId = DB::table('transactions')->insertGetId([
             'user_id' => $userId,
             'id_menu' => $menusData[0]['id_menu'],
-            'id_promo' => $menusData[0]['id_promo'],
+            'id_promo' => $request->id_promo,
             'no_nota' => $noNota,
-            'status_transaction' => 'completed',
+            'status_transaction' => $request->status_transactions,
             'status_payment' => 'paid',
-            'discount_amount' => $discountAmount,
-            'grand_total' => $grandTotal,
+            'payment' => $request->payment,
+            'discount_amount' => $request->discount_amount,
+            'grand_total' => $request->total,
             'quantity' => collect($menusData)->sum('quantity'),
             'created_at' => now(),
             'updated_at' => now(),
@@ -90,6 +81,7 @@ class TransactionController extends Controller
         foreach ($menusData as $menuData) {
             DB::table('menu_transaction')->insert([
                 'transaction_id' => $transactionId,
+                'menu_id' => $menuData['id_menu'],
                 'quantity' => $menuData['quantity'],
                 'price' => $menuData['grand_total'],
                 'created_at' => now(),
@@ -120,14 +112,12 @@ class TransactionController extends Controller
             return response()->json(['message' => 'Transaction not found'], 404);
         }
 
-        // Validasi input
         $request->validate([
-            'menus' => 'required|array', // Menunggu array menus
-            'menus.*.id_menu' => 'required|exists:menus,id', // Setiap menu harus ada di database
-            'menus.*.quantity' => 'required|integer|min:1', // Kuantitas harus lebih dari 0
+            'menus' => 'required|array',
+            'menus.*.id_menu' => 'required|exists:menus,id',
+            'menus.*.quantity' => 'required|integer|min:1',
         ]);
 
-        // Hitung total grand total dan diskon
         $grandTotal = 0;
         $discountAmount = 0;
 
@@ -135,8 +125,6 @@ class TransactionController extends Controller
         foreach ($request->menus as $menuData) {
             $menu = Menu::find($menuData['id_menu']);
             $quantity = $menuData['quantity'];
-
-            // Menghitung harga menu dengan diskon jika ada promo
             $discountAmountForItem = 0;
             $promo = Promo::find($menuData['id_promo']);
             if ($promo) {
@@ -151,19 +139,16 @@ class TransactionController extends Controller
                 'price' => $menu->price,
             ];
 
-            // Mengurangi stok menu setelah transaksi
             $menu->decrement('stock', $quantity);
         }
 
-        // Update transaksi
         $transaction->update([
-            'status_transaction' => 'pending', // Status transaksi diupdate
-            'status_payment' => 'unpaid', // Status pembayaran
+            'status_transaction' => 'pending',
+            'status_payment' => 'unpaid',
             'discount_amount' => $discountAmount,
             'grand_total' => $grandTotal,
         ]);
 
-        // Update relasi menu
         $transaction->menus()->sync($menusData);
 
         return response()->json([
@@ -172,7 +157,6 @@ class TransactionController extends Controller
         ]);
     }
 
-    // Menghapus transaksi berdasarkan ID
     public function destroy($id)
     {
         $transaction = Transaction::find($id);
@@ -181,7 +165,6 @@ class TransactionController extends Controller
             return response()->json(['message' => 'Transaction not found'], 404);
         }
 
-        // Kembalikan stok menu yang terjual
         $menu = Menu::find($transaction->id_menu);
         $menu->increment('stock', $transaction->quantity);
 

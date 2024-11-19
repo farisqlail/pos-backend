@@ -25,6 +25,7 @@ class TransactionSeeder extends Seeder
             'no_nota' => 'n0001',
             'user_id' => 2,
             'quantity' => 2,
+            'payment' => "tunai",
             'grand_total' => ($menu->price * 2) - (($promo->discount / 100) * $menu->price * 2),
             'status_transaction' => 'completed',
             'status_payment' => 'paid',

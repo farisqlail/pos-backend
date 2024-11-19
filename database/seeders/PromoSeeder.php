@@ -14,23 +14,19 @@ class PromoSeeder extends Seeder
      */
     public function run()
     {
-        // Menambahkan 3 data promo
         Promo::create([
-            'name' => 'Diskon 50%',
-            'discount' => 50,
-            'quantity' => 100
+            'name' => 'Diskon',
+            'discount' => 5000
         ]);
 
         Promo::create([
-            'name' => 'Diskon 30%',
-            'discount' => 30,
-            'quantity' => 150
+            'name' => 'Diskon',
+            'discount' => 3000
         ]);
 
         Promo::create([
-            'name' => 'Diskon 10%',
-            'discount' => 10,
-            'quantity' => 200
+            'name' => 'Diskon',
+            'discount' => 1000
         ]);
     }
 }

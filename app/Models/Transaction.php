@@ -17,7 +17,8 @@ class Transaction extends Model
         'status_payment',
         'discount_amount',
         'grand_total',
-        'quantity'
+        'quantity',
+        'payment'
     ];
 
     public function menus()

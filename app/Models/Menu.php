@@ -18,6 +18,6 @@ class Menu extends Model
     public function transactions()
     {
         return $this->belongsToMany(Transaction::class)
-            ->withPivot('quantity', 'price'); // Tambahkan 'quantity' dan 'price' sebagai data pivot
+            ->withPivot('quantity', 'price'); 
     }
 }

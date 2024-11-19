@@ -8,14 +8,12 @@ use Illuminate\Http\Request;
 
 class PromoController extends Controller
 {
-    // Menampilkan semua promo
     public function index()
     {
-        $promos = Promo::all(); // Ambil semua data promo
-        return PromoResource::collection($promos); // Kembalikan sebagai koleksi resource
+        $promos = Promo::all(); 
+        return PromoResource::collection($promos); 
     }
 
-    // Menampilkan promo berdasarkan ID
     public function show($id)
     {
         $promo = Promo::find($id);
@@ -24,19 +22,16 @@ class PromoController extends Controller
             return response()->json(['message' => 'Promo not found'], 404);
         }
 
-        return new PromoResource($promo); // Mengembalikan resource untuk satu promo
+        return new PromoResource($promo); 
     }
 
-    // Menambahkan promo baru
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
             'name' => 'required|string|max:255',
             'discount' => 'required|integer',
         ]);
 
-        // Membuat promo baru
         $promo = Promo::create([
             'name' => $request->name,
             'discount' => $request->discount,
@@ -45,10 +40,9 @@ class PromoController extends Controller
         return response()->json([
             'message' => 'Promo created successfully',
             'promo' => new PromoResource($promo)
-        ], 201); // Status code 201: Created
+        ], 201); 
     }
 
-    // Mengupdate promo berdasarkan ID
     public function update(Request $request, $id)
     {
         $promo = Promo::find($id);
@@ -57,13 +51,11 @@ class PromoController extends Controller
             return response()->json(['message' => 'Promo not found'], 404);
         }
 
-        // Validasi input
         $request->validate([
             'name' => 'required|string|max:255',
             'discount' => 'required|integer',
         ]);
 
-        // Update data promo
         $promo->update([
             'name' => $request->name,
             'discount' => $request->discount,
@@ -75,7 +67,6 @@ class PromoController extends Controller
         ]);
     }
 
-    // Menghapus promo berdasarkan ID
     public function destroy($id)
     {
         $promo = Promo::find($id);
