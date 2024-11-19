@@ -33,6 +33,8 @@ Route::post('transactions/create', [TransactionController::class, 'store']);
 Route::put('transactions/{id}', [TransactionController::class, 'update']); 
 Route::delete('transactions/{id}', [TransactionController::class, 'destroy']);
 
+Route::get('dashboard-data', [TransactionController::class, 'getDashboardData']);
+
 Route::get('/users', [UserController::class, 'index']);
 Route::post('/users', [UserController::class, 'store']);
 Route::get('/users/{id}', [UserController::class, 'show']);

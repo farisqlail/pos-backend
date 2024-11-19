@@ -7,13 +7,65 @@ use App\Models\Menu;
 use App\Models\Promo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
     public function index()
     {
-        $transactions = Transaction::all();
+        $today = Carbon::today();
+        $transactions = Transaction::whereDate('created_at', $today)->get();
+
         return response()->json($transactions);
+    }
+
+    public function getDashboardData(Request $request)
+    {
+        $filterDay = $request->input('day');
+        $filterMonth = $request->input('month');
+        $filterYear = $request->input('year');
+
+        $query = Transaction::query();
+
+        if ($filterDay) {
+            $query->whereDay('created_at', $filterDay);
+        }
+
+        if ($filterMonth) {
+            $query->whereMonth('created_at', $filterMonth);
+        }
+
+        if ($filterYear) {
+            $query->whereYear('created_at', $filterYear);
+        }
+
+        $transactions = $query->get();
+
+        $totalTransactions = $transactions->count();
+        $totalRevenue = $transactions->sum('grand_total');
+        $totalItemsSold = $transactions->sum('quantity');
+        $popularPaymentMethod = $transactions->groupBy('payment')->sortByDesc(function ($group) {
+            return $group->count();
+        })->keys()->first();
+        $totalDiscount = $transactions->sum('discount_amount');
+        $completedTransactions = $transactions->where('status_transaction', 'completed')->count();
+        $pendingTransactions = $transactions->where('status_transaction', 'pending')->count();
+        $topSellingProduct = $transactions->groupBy('id_menu')->map(function ($group) {
+            return $group->sum('quantity');
+        })->sortDesc()->keys()->first();
+
+        $dashboardData = [
+            'total_transactions' => $totalTransactions,
+            'total_revenue' => $totalRevenue,
+            'total_items_sold' => $totalItemsSold,
+            'popular_payment_method' => $popularPaymentMethod,
+            'total_discount' => $totalDiscount,
+            'completed_transactions' => $completedTransactions,
+            'pending_transactions' => $pendingTransactions,
+            'top_selling_product' => $topSellingProduct,
+        ];
+
+        return response()->json($dashboardData);
     }
 
     public function show($id)
@@ -34,17 +86,16 @@ class TransactionController extends Controller
             'total' => 'required',
             'status_payment' => 'required',
             'status_transactions' => 'required',
+            'user_id' => 'required',
             'menus' => 'required|array',
             'menus.*.id_menu' => 'required|exists:menus,id',
             'menus.*.quantity' => 'required|integer|min:1',
             'menus.*.id_promo' => 'nullable|exists:promos,id',
-            'menus.*.user_id' => 'required|exists:users,id'
         ]);
 
         $grandTotal = 0;
         $menusData = [];
-
-        $userId = $request->menus[0]['user_id'];
+        $today = Carbon::today();
 
         foreach ($request->menus as $menuData) {
             $menu = Menu::findOrFail($menuData['id_menu']);
@@ -64,7 +115,7 @@ class TransactionController extends Controller
         $noNota = 'TRX' . date('Ymd') . strtoupper(uniqid());
 
         $transactionId = DB::table('transactions')->insertGetId([
-            'user_id' => $userId,
+            'user_id' => $request->user_id,
             'id_menu' => $menusData[0]['id_menu'],
             'id_promo' => $request->id_promo,
             'no_nota' => $noNota,
@@ -91,13 +142,15 @@ class TransactionController extends Controller
 
         return response()->json([
             'message' => 'Transaction created successfully',
-            'transaction' => [
+            'data' => [
                 'id' => $transactionId,
                 'no_nota' => $noNota,
-                'user_id' => $userId,
+                'user_id' => $request->user_id,
                 'status_transaction' => 'completed',
                 'status_payment' => 'paid',
                 'grand_total' => $grandTotal,
+                'payment' => $request->payment,
+                'date_payment' => $today,
                 'quantity' => collect($menusData)->sum('quantity'),
                 'menus' => $menusData,
             ],
