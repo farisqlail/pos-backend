@@ -30,7 +30,7 @@ Route::delete('promos/{id}', [PromoController::class, 'destroy']);
 Route::get('transactions', [TransactionController::class, 'index']);
 Route::get('transactions/{id}', [TransactionController::class, 'show']); 
 Route::post('transactions/create', [TransactionController::class, 'store']); 
-Route::put('transactions/{id}', [TransactionController::class, 'update']); 
+Route::put('transactions/{id}/status', [TransactionController::class, 'update']); 
 Route::delete('transactions/{id}', [TransactionController::class, 'destroy']);
 
 Route::get('dashboard-data', [TransactionController::class, 'getDashboardData']);

@@ -11,10 +11,18 @@ use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $today = Carbon::today();
-        $transactions = Transaction::whereDate('created_at', $today)->get();
+        $day = $request->query('day', now()->day);
+        $month = $request->query('month', now()->month);
+        $year = $request->query('year', now()->year);
+
+        $transactions = Transaction::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->when($day, function ($query) use ($day) {
+                $query->whereDay('created_at', $day);
+            })
+            ->get();
 
         return response()->json($transactions);
     }
@@ -159,53 +167,23 @@ class TransactionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $transaction = Transaction::find($id);
+        $transaction = Transaction::where('no_nota', $id)->first();
 
         if (!$transaction) {
             return response()->json(['message' => 'Transaction not found'], 404);
         }
 
         $request->validate([
-            'menus' => 'required|array',
-            'menus.*.id_menu' => 'required|exists:menus,id',
-            'menus.*.quantity' => 'required|integer|min:1',
+            'status_transaction' => 'required|string|in:completed,proses',
+
         ]);
-
-        $grandTotal = 0;
-        $discountAmount = 0;
-
-        $menusData = [];
-        foreach ($request->menus as $menuData) {
-            $menu = Menu::find($menuData['id_menu']);
-            $quantity = $menuData['quantity'];
-            $discountAmountForItem = 0;
-            $promo = Promo::find($menuData['id_promo']);
-            if ($promo) {
-                $discountAmountForItem = ($promo->discount / 100) * $menu->price * $quantity;
-            }
-
-            $grandTotal += ($menu->price * $quantity) - $discountAmountForItem;
-
-            $menusData[] = [
-                'menu_id' => $menu->id,
-                'quantity' => $quantity,
-                'price' => $menu->price,
-            ];
-
-            $menu->decrement('stock', $quantity);
-        }
 
         $transaction->update([
-            'status_transaction' => 'pending',
-            'status_payment' => 'unpaid',
-            'discount_amount' => $discountAmount,
-            'grand_total' => $grandTotal,
+            'status_transaction' => $request->status_transaction,
         ]);
 
-        $transaction->menus()->sync($menusData);
-
         return response()->json([
-            'message' => 'Transaction updated successfully',
+            'message' => 'Transaction status updated successfully',
             'transaction' => $transaction
         ]);
     }
