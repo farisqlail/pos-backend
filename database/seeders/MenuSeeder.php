@@ -11,13 +11,13 @@ class MenuSeeder extends Seeder
     {
         // Menambahkan 5 menu contoh
         Menu::create([
-            'name' => 'Nasi Goreng',
+            'name' => 'Sate Kambing',
             'price' => 25000,
             'stock' => 50,
         ]);
 
         Menu::create([
-            'name' => 'Mie Ayam',
+            'name' => 'Sate Ayam Kelapa',
             'price' => 15000,
             'stock' => 30,
         ]);
@@ -29,14 +29,14 @@ class MenuSeeder extends Seeder
         ]);
 
         Menu::create([
-            'name' => 'Pecel Lele',
-            'price' => 18000,
+            'name' => 'Es Teh',
+            'price' => 5000,
             'stock' => 60,
         ]);
 
         Menu::create([
-            'name' => 'Nasi Campur',
-            'price' => 22000,
+            'name' => 'Es jeruk',
+            'price' => 6000,
             'stock' => 35,
         ]);
     }

@@ -26,7 +26,7 @@ class TransactionSeeder extends Seeder
             'user_id' => 2,
             'quantity' => 2,
             'payment' => "tunai",
-            'grand_total' => ($menu->price * 2) - (($promo->discount / 100) * $menu->price * 2),
+            'grand_total' => 20000,
             'status_transaction' => 'pending',
             'status_payment' => 'paid',
             'discount_amount' => ($promo->discount / 100) * $menu->price * 2
