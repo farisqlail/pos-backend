@@ -29,25 +29,17 @@ class TransactionController extends Controller
 
     public function getDashboardData(Request $request)
     {
-        $filterDay = $request->input('day');
-        $filterMonth = $request->input('month');
-        $filterYear = $request->input('year');
+        $startDate = $request->query('start_date', now()->startOfDay());
+        $endDate = $request->query('end_date', now()->endOfDay());
 
-        $query = Transaction::query();
+        $request->validate([
+            'start_date' => 'date|nullable',
+            'end_date' => 'date|nullable',
+        ]);
 
-        if ($filterDay) {
-            $query->whereDay('created_at', $filterDay);
-        }
-
-        if ($filterMonth) {
-            $query->whereMonth('created_at', $filterMonth);
-        }
-
-        if ($filterYear) {
-            $query->whereYear('created_at', $filterYear);
-        }
-
-        $transactions = $query->get();
+        $transactions = Transaction::whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->get();
 
         $totalTransactions = $transactions->count();
         $totalRevenue = $transactions->sum('grand_total');
