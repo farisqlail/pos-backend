@@ -36,11 +36,9 @@ class TransactionController extends Controller
             'start_date' => 'date|nullable',
             'end_date' => 'date|nullable',
         ]);
-
         $transactions = Transaction::whereDate('created_at', '>=', $startDate)
             ->whereDate('created_at', '<=', $endDate)
             ->get();
-
         $totalTransactions = $transactions->count();
         $totalRevenue = $transactions->sum('grand_total');
         $totalItemsSold = $transactions->sum('quantity');
@@ -50,9 +48,25 @@ class TransactionController extends Controller
         $totalDiscount = $transactions->sum('discount_amount');
         $completedTransactions = $transactions->where('status_transaction', 'completed')->count();
         $pendingTransactions = $transactions->where('status_transaction', 'pending')->count();
-        $topSellingProduct = $transactions->groupBy('id_menu')->map(function ($group) {
+        $topSellingProductId = $transactions->groupBy('id_menu')->map(function ($group) {
             return $group->sum('quantity');
         })->sortDesc()->keys()->first();
+        $topSellingProduct = Menu::find($topSellingProductId);
+        $topPromotionId = $transactions->groupBy('id_promo')->map(function ($group) {
+            return $group->count();
+        })->sortDesc()->keys()->first();
+        $topPromotion = Promo::find($topPromotionId);
+        $paymentMethodRevenue = $transactions->groupBy('payment')->map(function ($group) {
+            return $group->sum('grand_total');
+        });
+        $dailyTransactions = $transactions->groupBy(function ($transaction) {
+            return $transaction->created_at->format('Y-m-d');
+        })->map(function ($group, $date) {
+            return [
+                'date' => $date,
+                'count' => $group->count(),
+            ];
+        })->values();
 
         $dashboardData = [
             'total_transactions' => $totalTransactions,
@@ -62,7 +76,10 @@ class TransactionController extends Controller
             'total_discount' => $totalDiscount,
             'completed_transactions' => $completedTransactions,
             'pending_transactions' => $pendingTransactions,
-            'top_selling_product' => $topSellingProduct,
+            'top_selling_product' => $topSellingProduct ? $topSellingProduct->name : 'N/A',
+            'top_promotion' => $topPromotion ? $topPromotion->name : 'N/A',
+            'payment_method_revenue' => $paymentMethodRevenue,
+            'daily_transactions' => $dailyTransactions,
         ];
 
         return response()->json($dashboardData);
