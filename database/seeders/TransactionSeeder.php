@@ -26,6 +26,7 @@ class TransactionSeeder extends Seeder
             'user_id' => 2,
             'quantity' => 2,
             'payment' => "tunai",
+            'type_transaction' => 'dine in',
             'grand_total' => 20000,
             'status_transaction' => 'pending',
             'status_payment' => 'paid',
