@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\MenuStockController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
@@ -46,3 +47,5 @@ Route::post('/payments', [PaymentController::class, 'store']);
 Route::get('/payments/{id}', [PaymentController::class, 'show']);
 Route::put('/payments/{id}', [PaymentController::class, 'update']);
 Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
+
+Route::resource('menu-stocks', MenuStockController::class);  
