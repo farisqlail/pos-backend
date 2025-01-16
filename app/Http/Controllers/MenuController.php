@@ -11,16 +11,21 @@ class MenuController extends Controller
 {
     public function index()
     {
-        $menus = Menu::all(); 
+        $today = now()->toDateString(); 
+  
+        $menus = Menu::with(['stock' => function ($query) use ($today) {
+            $query->where('date', $today); 
+        }])->get();
+
         return MenuResource::collection($menus);
     }
 
     public function show($id)
     {
-        $menu = Menu::find($id); 
+        $menu = Menu::find($id);
 
         if (!$menu) {
-            return response()->json(['message' => 'Menu not found'], 404); 
+            return response()->json(['message' => 'Menu not found'], 404);
         }
 
         return new MenuResource($menu);
@@ -31,7 +36,7 @@ class MenuController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
-            'stock' => 'required|integer',
+            'id_stock' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -41,7 +46,7 @@ class MenuController extends Controller
         $menu = Menu::create([
             'name' => $request->name,
             'price' => $request->price,
-            'stock' => $request->stock,
+            'id_stock' => $request->id_stock,
         ]);
 
         return response()->json([
@@ -61,7 +66,7 @@ class MenuController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'price' => 'sometimes|numeric',
-            'stock' => 'sometimes|integer',
+            'id_stock' => 'sometimes|integer',
         ]);
 
         if ($validator->fails()) {
@@ -78,7 +83,7 @@ class MenuController extends Controller
 
     public function destroy($id)
     {
-        $menu = Menu::find($id); 
+        $menu = Menu::find($id);
 
         if (!$menu) {
             return response()->json(['message' => 'Menu not found'], 404);

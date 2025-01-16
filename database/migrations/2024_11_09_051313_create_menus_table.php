@@ -10,9 +10,9 @@ class CreateMenusTable extends Migration
     {
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('id_stock')->unsigned();
             $table->string('name');
-            $table->decimal('price', 10, 2); // Menyimpan harga dengan dua angka desimal
-            $table->integer('stock'); // Stok barang
+            $table->decimal('price', 10, 2);
             $table->timestamps();
         });
     }

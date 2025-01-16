@@ -14,4 +14,9 @@ class Stock extends Model
         'stock',
         'date'
     ];
+
+    public function menu()  
+    {  
+        return $this->belongsTo(Menu::class, 'id_menu');  
+    }  
 }

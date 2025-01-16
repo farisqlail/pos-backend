@@ -8,11 +8,16 @@ class MenuResource extends JsonResource
 {
     public function toArray($request)
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'price' => (float) $this->price, // Mengubah harga menjadi float
-            'stock' => $this->stock,
-        ];
+        return [  
+            'id' => $this->id,  
+            'name' => $this->name,  
+            'price' => $this->price,  
+            'stock' => $this->stock ? [  
+                'id' => $this->stock->id, 
+                'id_menu' => $this->stock->id_menu, 
+                'stock' => $this->stock->stock,  
+                'date' => $this->stock->date,  
+            ] : null,  
+        ];  
     }
 }

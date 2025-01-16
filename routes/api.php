@@ -48,4 +48,5 @@ Route::get('/payments/{id}', [PaymentController::class, 'show']);
 Route::put('/payments/{id}', [PaymentController::class, 'update']);
 Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
 
+Route::get('menu-stocks/{id_menu}', [MenuStockController::class, 'index']);  
 Route::resource('menu-stocks', MenuStockController::class);  

@@ -10,9 +10,9 @@ class Menu extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id_stock',
         'name',
         'price',
-        'stock'
     ];
 
     public function transactions()
@@ -20,4 +20,9 @@ class Menu extends Model
         return $this->belongsToMany(Transaction::class)
             ->withPivot('quantity', 'price'); 
     }
+
+    public function stock()  
+    {  
+        return $this->hasOne(Stock::class, 'id_menu');  
+    }  
 }
