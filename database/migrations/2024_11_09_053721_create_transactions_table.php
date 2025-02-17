@@ -26,6 +26,7 @@ return new class extends Migration
             $table->enum('status_transaction', ['pending', 'completed', 'proses'])->default('pending');
             $table->enum('status_payment', ['unpaid', 'paid'])->default('unpaid');
             $table->decimal('discount_amount', 10, 2)->nullable();
+            $table->integer('pay_amount');
             $table->timestamps();
         });
     }

@@ -9,6 +9,7 @@ use App\Http\Controllers\PromoController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\StockCheckController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -17,6 +18,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('login', [AuthController::class, 'login']);
 
 Route::get('menus', [MenuController::class, 'index']);
+Route::get('menus-all', [MenuController::class, 'indexAll']);
 Route::get('menus/{id}', [MenuController::class, 'show']);
 Route::post('menus', [MenuController::class, 'store']);
 Route::put('menus/{id}', [MenuController::class, 'update']);
@@ -50,3 +52,5 @@ Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
 
 Route::get('menu-stocks/{id_menu}', [MenuStockController::class, 'index']);  
 Route::resource('menu-stocks', MenuStockController::class);  
+Route::get('menus/check-empty-stock', [MenuStockController::class, 'checkStock']);
+Route::get('stock', [StockCheckController::class, 'index']);

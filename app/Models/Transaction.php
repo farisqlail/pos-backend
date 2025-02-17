@@ -19,7 +19,8 @@ class Transaction extends Model
         'grand_total',
         'quantity',
         'payment',
-        'type_transaction'
+        'type_transaction',
+        'pay_amount'
     ];
 
     public function menus()

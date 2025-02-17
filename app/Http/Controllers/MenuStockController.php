@@ -5,13 +5,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Stock;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class MenuStockController extends Controller
 {
     public function index($id_menu)
     {
-        $menuStocks = Stock::where('id_menu', $id_menu)->get(); 
+        $menuStocks = Stock::where('id_menu', $id_menu)->get();
 
         return response()->json([
             'success' => true,

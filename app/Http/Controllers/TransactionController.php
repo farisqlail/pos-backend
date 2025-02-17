@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\Menu;
 use App\Models\Promo;
+use App\Models\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -113,21 +114,33 @@ class TransactionController extends Controller
 
         $grandTotal = 0;
         $menusData = [];
-        $today = Carbon::today();
+        $today = Carbon::today()->format('Y-m-d'); // Correctly format today's date  
 
         foreach ($request->menus as $menuData) {
             $menu = Menu::findOrFail($menuData['id_menu']);
             $quantity = $menuData['quantity'];
 
-            $grandTotal += ($menu->price * $quantity) - $request->discount_amount;
+            $price = (float) $menu->price;
+ 
+            $grandTotal += ($price * $quantity) - ($request->discount_amount ?? 0);
             $menusData[] = [
                 'id_menu' => $menu->id,
                 'id_promo' => $request->id_promo,
                 'quantity' => $quantity,
-                'grand_total' => $menu->price * $quantity,
+                'grand_total' => $price * $quantity,
             ];
 
-            $menu->decrement('stock', $quantity);
+            // Find the stock entry for today  
+            $stockEntry = Stock::where('date', $today)
+                ->where('id_menu', $menu->id)
+                ->first();
+
+            if ($stockEntry && $stockEntry->stock >= $quantity) {
+                $stockEntry->stock -= $quantity; 
+                $stockEntry->save(); 
+            } else {
+                return response()->json(['message' => 'Insufficient stock for menu item: ' . $menu->name], 400);
+            }
         }
 
         $noNota = 'TRX' . date('Ymd') . strtoupper(uniqid());
@@ -142,6 +155,7 @@ class TransactionController extends Controller
             'payment' => $request->payment,
             'type_transaction' => $request->type_transaction,
             'discount_amount' => $request->discount_amount,
+            'pay_amount' => $request->payAmount,
             'grand_total' => $request->total,
             'quantity' => collect($menusData)->sum('quantity'),
             'created_at' => now(),
@@ -173,6 +187,7 @@ class TransactionController extends Controller
                 'date_payment' => $today,
                 'quantity' => collect($menusData)->sum('quantity'),
                 'menus' => $menusData,
+                'pay_amount' => $request->payAmount
             ],
         ], 201);
     }

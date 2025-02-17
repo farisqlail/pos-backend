@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Menu;
 use App\Http\Resources\MenuResource;
+use App\Http\Resources\MenuAllResource;
+use App\Models\Stock;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,13 +14,48 @@ class MenuController extends Controller
 {
     public function index()
     {
-        $today = now()->toDateString(); 
-  
+        $today = now()->toDateString();
+
+        // Fetch stocks for today with stock greater than 0
+        $stocks = Stock::with(['menu'])->where('date', $today)
+            ->where('stock', '>', 0)
+            ->get();
+        // Prepare an array to hold the results
+        $result = [];
+
+        foreach ($stocks as $stock) {
+            $menu = Menu::where('id', $stock->id_menu)->first();
+            if ($menu) {
+                $result[] = [
+                    'id' => $menu->id,
+                    'name' => $menu->name,
+                    'price' => $menu->price,
+                    'stock' => [
+                        'id' => $stock->id,
+                        'id_menu' => $stock->id_menu,
+                        'stock' => $stock->stock,
+                        'date' => $stock->date,
+                    ],
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Menu stocks retrieved successfully.',
+            'data' => $result,
+        ]);
+    }
+
+    public function indexAll()
+    {
+        $today = now()->toDateString();
+
         $menus = Menu::with(['stock' => function ($query) use ($today) {
-            $query->where('date', $today); 
+            $query->where('date', $today);
         }])->get();
 
-        return MenuResource::collection($menus);
+        return MenuAllResource::collection($menus);
     }
 
     public function show($id)
